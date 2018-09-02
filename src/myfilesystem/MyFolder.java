@@ -42,6 +42,12 @@ public class MyFolder {
         return files.get(name);
     }
 
+    public void printAllFilesSizes() {
+        for (MyFile f : files.values()) {
+            System.out.println(f.getName() + " " + f.getLineCount() + " lines");
+        }
+    }
+
     public String getFolderPath() {
         MyFolder currentF = this;
         StringBuilder path = new StringBuilder();

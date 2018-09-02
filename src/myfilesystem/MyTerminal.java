@@ -173,10 +173,12 @@ public class MyTerminal {
                 } catch (Exception e) {
                     System.out.println("Invalid command");
                 }
+            } else if (name.equals("|")) {
+                current.printAllFilesSizes();
             } else {
                 System.out.println("Invalid command");
-                printCurrentPath();
             }
+            printCurrentPath();
             break;
         }
         case "help": {
@@ -184,18 +186,36 @@ public class MyTerminal {
             break;
         }
         case "wc": {
-            if (current.getFileByName(name) != null) {
-                System.out.println(WordCounter.countFile(current.getFileByName(name)));
+            if (name.equals("-l")) {
+                remain.skip(" ");
+                name = remain.next();
+                if (current.getFileByName(name) != null) {
+                    System.out.println(current.getFileByName(name).getLineCount());
+                } else {
+                    StringBuilder text = new StringBuilder(name);
+                    while (remain.hasNextLine()) {
+                        text.append(remain.nextLine());
+                    }
+                    System.out.println(WordCounter.countText(text.toString()));
+                }
             } else {
-                StringBuilder text = new StringBuilder(name);
-                text.append(remain.nextLine());
-                System.out.println(WordCounter.countText(text.toString()));
+                if (current.getFileByName(name) != null) {
+                    System.out.println(WordCounter.countFile(current.getFileByName(name)));
+                } else {
+                    StringBuilder text = new StringBuilder(name);
+                    while (remain.hasNextLine()) {
+                        text.append(remain.nextLine());
+                    }
+                    System.out.println(WordCounter.countText(text.toString()));
+                }
             }
             printCurrentPath();
             break;
         }
         default: {
             printCommands();
+            printCurrentPath();
+            break;
         }
         }
     }
