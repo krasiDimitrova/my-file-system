@@ -164,7 +164,6 @@ public class MyTerminal {
                     System.out.println("Invalid command");
                 }
             }
-
             break;
         }
         case "ls": {
@@ -182,6 +181,17 @@ public class MyTerminal {
         }
         case "help": {
             printCommands();
+            break;
+        }
+        case "wc": {
+            if (current.getFileByName(name) != null) {
+                System.out.println(WordCounter.countFile(current.getFileByName(name)));
+            } else {
+                StringBuilder text = new StringBuilder(name);
+                text.append(remain.nextLine());
+                System.out.println(WordCounter.countText(text.toString()));
+            }
+            printCurrentPath();
             break;
         }
         default: {
