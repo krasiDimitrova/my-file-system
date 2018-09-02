@@ -51,4 +51,11 @@ public class MyLine {
         MyLine other = (MyLine) obj;
         return (text == null && other.text == null) || (text.toString().equals(other.text.toString()));
     }
+
+    @Override
+    public String toString() {
+        if (text == null)
+            return null;
+        return text.toString();
+    }
 }

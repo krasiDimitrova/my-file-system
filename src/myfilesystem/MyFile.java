@@ -89,4 +89,16 @@ public class MyFile {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder temp = new StringBuilder();
+        for (MyLine l : content) {
+            temp.append(l.toString() + " ");
+        }
+        if (temp.length() > 0) {
+            temp.deleteCharAt(temp.length() - 1);
+        }
+        return temp.toString();
+    }
 }

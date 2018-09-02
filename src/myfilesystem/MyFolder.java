@@ -86,6 +86,7 @@ public class MyFolder {
         for (String name : sortedFoldersNames) {
             System.out.println(name);
         }
+        System.out.println("Files:");
         for (MyFile file : sortedFilesNames) {
             System.out.println(file.getName());
         }

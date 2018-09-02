@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import myfilesystem.MyFile;
-
 public class MyFileTest {
 
     @Test
@@ -24,7 +22,7 @@ public class MyFileTest {
     }
 
     @Test
-    public void givenMyFileAftersetTextAtLineWhenGetSizeIsIvoketThenReturnNumberOfCharsInTheLinePlusNumOfLines() {
+    public void givenMyFileAfterSetTextAtLineWhenGetSizeIsIvoketThenReturnNumberOfCharsInTheLinePlusNumOfLines() {
         MyFile test = new MyFile("test");
         test.addLine("Test line");
         test.addLine("Test line 1");
@@ -32,4 +30,12 @@ public class MyFileTest {
         assertEquals(32, test.getSize());
     }
 
+    @Test
+    public void givenMyFileAfterSetTextAtLineWhenToStringIsInvokedThenReturnTheFileContent() {
+        MyFile test = new MyFile("test");
+        test.addLine("Test line");
+        test.addLine("Test line 1");
+        String content = "Test line Test line 1";
+        assertEquals(content, test.toString());
+    }
 }
