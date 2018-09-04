@@ -29,6 +29,10 @@ public class MyFolder {
         folders.put(name, newFolder);
     }
 
+    public boolean hasFolder(String name) {
+        return folders.containsKey(name);
+    }
+
     public MyFolder getFolderByName(String name) {
         return folders.get(name);
     }
@@ -36,6 +40,10 @@ public class MyFolder {
     public void makeNewFileInside(String name) {
         MyFile newFile = new MyFile(name);
         files.put(name, newFile);
+    }
+
+    public boolean hasFile(String name) {
+        return files.containsKey(name);
     }
 
     public MyFile getFileByName(String name) {
@@ -51,12 +59,13 @@ public class MyFolder {
     public String getFolderPath() {
         MyFolder currentF = this;
         StringBuilder path = new StringBuilder();
-        while (currentF.parent != null) {
-            path.insert(0, '/' + currentF.getName());
-            currentF = currentF.parent;
-        }
-        if (currentF.getName() != "/") {
-            path.insert(0, '/' + currentF.getName());
+        if (currentF.getName() == "/") {
+            path.insert(0, '/');
+        } else {
+            while (currentF.parent != null) {
+                path.insert(0, '/' + currentF.getName());
+                currentF = currentF.parent;
+            }
         }
         return path.toString();
     }
