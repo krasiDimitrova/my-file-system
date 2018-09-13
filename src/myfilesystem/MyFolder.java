@@ -19,51 +19,84 @@ public class MyFolder {
         this.parent = null;
     }
 
-    public String getName() {
+    private String getName() {
         return name;
     }
 
-    public void makeNewFolderInside(String name) {
-        MyFolder newFolder = new MyFolder(name);
-        newFolder.parent = this;
-        folders.put(name, newFolder);
+    public MyFolder getParent() {
+        return this.parent;
     }
 
-    public boolean hasFolder(String name) {
-        return folders.containsKey(name);
+    public void makeNewFolderInside(String name) throws InvalidArgumentException {
+        if (folders.containsKey(name)) {
+            throw new InvalidArgumentException("Folder with name \"" + name + "\" already Exists");
+        } else {
+            MyFolder newFolder = new MyFolder(name);
+            newFolder.parent = this;
+            folders.put(name, newFolder);
+        }
     }
 
-    public MyFolder getFolderByName(String name) {
-        return folders.get(name);
+    public MyFolder getFolderByName(String name) throws InvalidArgumentException {
+        if (folders.containsKey(name)) {
+            return folders.get(name);
+        } else {
+            throw new InvalidArgumentException("Folder with name \"" + name + "\" dosen't exist");
+        }
     }
 
-    public void makeNewFileInside(String name) {
-        MyFile newFile = new MyFile(name);
-        files.put(name, newFile);
+    public void makeNewFileInside(String name) throws InvalidArgumentException {
+        if (folders.containsKey(name)) {
+            throw new InvalidArgumentException("File with name \"" + name + "\" already Exists");
+        } else {
+            MyFile newFile = new MyFile(name);
+            files.put(name, newFile);
+        }
     }
 
-    public boolean hasFile(String name) {
-        return files.containsKey(name);
+    public void writeInFile(String name, int line, String text, boolean overwrite)
+            throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            MyFile cfile = files.get(name);
+            cfile.setTextAtLine(line, text, overwrite);
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
+        }
     }
 
-    public MyFile getFileByName(String name) {
-        return files.get(name);
+    public void printFileLineCount(String name) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            files.get(name).printLineCount();
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
+        }
     }
 
-    public void printAllFilesSizes() {
-        for (MyFile f : files.values()) {
-            System.out.println(f.getName() + " " + f.getLineCount() + " lines");
+    public void printFileWordsCount(String name) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            files.get(name).printWordsCount();
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
+        }
+    }
+
+    public void displayFile(String name) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            MyFile cfile = files.get(name);
+            cfile.printContent();
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
     }
 
     public String getFolderPath() {
         MyFolder currentF = this;
         StringBuilder path = new StringBuilder();
-        if (currentF.getName() == "/") {
+        if (currentF.name == "/") {
             path.insert(0, '/');
         } else {
             while (currentF.parent != null) {
-                path.insert(0, '/' + currentF.getName());
+                path.insert(0, '/' + currentF.name);
                 currentF = currentF.parent;
             }
         }
@@ -86,23 +119,19 @@ public class MyFolder {
         }
     }
 
-    public MyFolder getParent() {
-        return this.parent;
-    }
-
     public void printSortedByNameAndSize() {
         Set<String> sortedFoldersNames = new TreeSet<String>(folders.keySet());
-        Set<MyFile> sortedFilesNames = new TreeSet<MyFile>(
+        Set<MyFile> sortedFilesBySize = new TreeSet<MyFile>(
                 (MyFile file1, MyFile file2) -> file2.getSize() - file1.getSize());
         for (MyFile file : files.values()) {
-            sortedFilesNames.add(file);
+            sortedFilesBySize.add(file);
         }
         System.out.println("Folders:");
         for (String name : sortedFoldersNames) {
             System.out.println(name);
         }
         System.out.println("Files:");
-        for (MyFile file : sortedFilesNames) {
+        for (MyFile file : sortedFilesBySize) {
             System.out.println(file.getName());
         }
     }

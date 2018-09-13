@@ -5,7 +5,8 @@ import java.util.Scanner;
 public class Run {
 
     public static void main(String[] args) {
-        MyTerminal test = new MyTerminal();
+        MyFileSystem fs = new MyFileSystem();
+        MyTerminal test = new MyTerminal(fs);
         Scanner scan = new Scanner(System.in);
         while (test.getSatus()) {
             test.getCommands(scan);

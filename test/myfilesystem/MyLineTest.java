@@ -7,14 +7,18 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import myfilesystem.MyLine;
-
-public class LineTest {
+public class MyLineTest {
 
     @Test
     public void givenLineTextWhenGetTextIsInvokedThenReturnTheText() {
         MyLine test = new MyLine("Test");
         assertEquals("Test", test.getText());
+    }
+
+    @Test
+    public void givenEmptyTextWhenGetTextIsInvokedThenReturnTheText() {
+        MyLine test = new MyLine("");
+        assertEquals("", test.getText());
     }
 
     @Test
@@ -62,4 +66,5 @@ public class LineTest {
         MyLine test2 = new MyLine("Test2");
         assertNotEquals(test.hashCode(), test2.hashCode());
     }
+
 }

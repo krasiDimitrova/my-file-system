@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyFile {
+
     private List<MyLine> content;
     private String name;
     private int size;
@@ -12,6 +13,14 @@ public class MyFile {
         content = new ArrayList<MyLine>();
         this.name = name;
         this.size = content.size();
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getName() {
+        return name;
     }
 
     private int calculateSize() {
@@ -26,27 +35,44 @@ public class MyFile {
         this.size = calculateSize();
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void addLine(String text) {
+    private void addLine(String text) {
         MyLine newLine = new MyLine(text);
         content.add(newLine);
         setSize();
     }
 
-    public void setTextAtLine(int lineIndex, String text, Boolean overwrite) {
-        if (overwrite) {
-            content.get(lineIndex - 1).setText(text);
+    private boolean isLine(int index) {
+        return content.size() >= index;
+    }
+
+    public void setTextAtLine(int lineIndex, String text, Boolean overwrite)
+            throws InvalidArgumentException {
+        if (lineIndex < 1) {
+            throw new InvalidArgumentException("Invalid line index");
         } else {
-            content.get(lineIndex - 1).setTextByAppend(text);
+            if (!isLine(lineIndex)) {
+                for (int i = content.size() - 1; i < lineIndex - 1; i++) {
+                    addLine("");
+                }
+            }
+            if (overwrite) {
+                content.get(lineIndex - 1).setText(text);
+            } else {
+                content.get(lineIndex - 1).setTextByAppend(text);
+            }
+            setSize();
         }
-        setSize();
+    }
+
+    private String contentToString() {
+        StringBuilder temp = new StringBuilder();
+        for (MyLine l : content) {
+            temp.append(l.toString() + " ");
+        }
+        if (temp.length() > 0) {
+            temp.deleteCharAt(temp.length() - 1);
+        }
+        return temp.toString();
     }
 
     public void printContent() {
@@ -55,12 +81,12 @@ public class MyFile {
         }
     }
 
-    public boolean isLine(int index) {
-        return content.size() >= index;
+    public void printLineCount() {
+        System.out.println(name + " " + (content.size() - 1) + " lines");
     }
 
-    public int getLineCount() {
-        return content.size();
+    public void printWordsCount() {
+        System.out.println(name + " - " + WordCounter.countText(contentToString()) + " words");
     }
 
     @Override
@@ -88,17 +114,5 @@ public class MyFile {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder temp = new StringBuilder();
-        for (MyLine l : content) {
-            temp.append(l.toString() + " ");
-        }
-        if (temp.length() > 0) {
-            temp.deleteCharAt(temp.length() - 1);
-        }
-        return temp.toString();
     }
 }

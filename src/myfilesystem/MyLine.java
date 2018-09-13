@@ -1,6 +1,7 @@
 package myfilesystem;
 
 public class MyLine {
+
     private StringBuilder text;
     private int symbolsCount;
 
@@ -49,13 +50,15 @@ public class MyLine {
             return false;
         }
         MyLine other = (MyLine) obj;
-        return (text == null && other.text == null) || (text.toString().equals(other.text.toString()));
+        return (text == null && other.text == null)
+                || (text.toString().equals(other.text.toString()));
     }
 
     @Override
     public String toString() {
-        if (text == null)
+        if (text == null) {
             return null;
+        }
         return text.toString();
     }
 }

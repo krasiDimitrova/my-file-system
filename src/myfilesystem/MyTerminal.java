@@ -2,152 +2,122 @@ package myfilesystem;
 
 import java.util.Scanner;
 
-public class MyTerminal extends WordCounter {
-    private MyFolder start;
-    private MyFolder current;
-    private boolean status;
+public class MyTerminal {
 
-    public MyTerminal() {
+    private boolean status;
+    MyFileSystem fs;
+
+    public MyTerminal(MyFileSystem fs) {
         status = true;
-        start = new MyFolder("/");
-        start.makeNewFolderInside("Home");
-        current = start.getFolderByName("Home");
-        printCurrentPath();
+        this.fs = fs;
+        printPath();
     }
 
     public boolean getSatus() {
         return status;
     }
 
-    public void printCurrentPath() {
-        System.out.print(current.getFolderPath() + ">");
+    private void printPath() {
+        System.out.println(fs.getCurrentPath());
     }
 
-    public void cd(String name) {
-        switch (name) {
-        case ".": {
-            break;
-        }
-        case "..": {
-            current = current.getParent();
-            break;
-        }
-        default: {
-            if (current.hasFolder(name)) {
-                current = current.getFolderByName(name);
-            } else {
-                System.out.println("No such folder");
-            }
-            break;
-        }
+    private void cd(String name) {
+        try {
+            fs.switchDirectory(name);
+        } catch (InvalidArgumentException e) {
+            System.out.println("cd exception: " + e.getMessage());
         }
     }
 
-    public void mkdir(String name) {
-        current.makeNewFolderInside(name);
-    }
-
-    public void createFile(String name) {
-        if (name.equals("")) {
-            System.out.println("File nedds name!");
-            return;
-        }
-        current.makeNewFileInside(name);
-    }
-
-    public void cat(String name) {
-        if (current.hasFile(name)) {
-            MyFile openedF = current.getFileByName(name);
-            openedF.printContent();
-        } else {
-            System.out.println("No such folder");
+    private void mkdir(String name) {
+        try {
+            fs.mkdir(name);
+        } catch (InvalidArgumentException e) {
+            System.out.println("mkdir exception: " + e.getMessage());
         }
     }
 
-    public void getWrite(String input) {
+    private void createFile(String name) {
+        try {
+            fs.createFile(name);
+        } catch (InvalidArgumentException e) {
+            System.out.println("create_file exception: " + e.getMessage());
+        }
+    }
+
+    private void cat(String name) {
+        try {
+            fs.displayFileContent(name);
+        } catch (InvalidArgumentException e) {
+            System.out.println("cat exception: " + e.getMessage());
+        }
+    }
+
+    private void getWrite(String input) {
         Scanner in = new Scanner(input);
         String name = in.next();
-        if (name.equals("-overwrite")) {
-            in.skip(" ");
-            String n = in.next();
-            int num = in.nextInt();
-            in.skip(" ");
-            String text = in.nextLine();
-            write(n, num, text, true);
-        } else {
-            int num = in.nextInt();
-            in.skip(" ");
-            String text = in.nextLine();
-            write(name, num, text, false);
+        try {
+            if (name.equals("-overwrite")) {
+                in.skip(" ");
+                String n = in.next();
+                int num = in.nextInt();
+                in.skip(" ");
+                String text = in.nextLine();
+                fs.writeInFile(n, num, text, true);
+            } else {
+                int num = in.nextInt();
+                in.skip(" ");
+                String text = in.nextLine();
+                fs.writeInFile(name, num, text, false);
+            }
+        } catch (InvalidArgumentException e) {
+            System.out.println("write exception: " + e.getMessage());
+        } finally {
+            in.close();
         }
-        in.close();
     }
 
-    public void write(String name, int line, String text, boolean overwrite) {
-        if (current.hasFile(name)) {
-            MyFile cFile = current.getFileByName(name);
-            if (!cFile.isLine(line)) {
-                for (int i = cFile.getLineCount(); i < line - 1; i++) {
-                    cFile.addLine("");
-                }
-                cFile.addLine(text);
-            } else {
-                if (overwrite) {
-                    cFile.setTextAtLine(line, text, true);
+    private void printCommands() {
+        fs.printCommands();
+    }
+
+    private void ls(Boolean sorted) {
+        if (sorted) {
+            fs.lsSortedDes();
+        } else {
+            fs.ls();
+        }
+    }
+
+    private void getWc(String input, Scanner scanner) {
+        Scanner in = new Scanner(input);
+        String name = in.next();
+        try {
+            if (name.equals("-l")) {
+                in.skip(" ");
+                String n = in.next();
+                if (!in.hasNext()) {
+                    fs.getWc(n, true);
                 } else {
-                    cFile.setTextAtLine(line, text, false);
+                    String text = n + in.nextLine() + "\n" + getMultipleLineInput(scanner);
+                    fs.printWcforText(text, true);
+                }
+            } else {
+                if (!in.hasNext()) {
+                    fs.getWc(name, false);
+                } else {
+                    String text = name + in.nextLine() + "\n" + getMultipleLineInput(scanner);
+                    fs.printWcforText(text, false);
                 }
             }
-        } else {
-            System.out.println("No such file");
+        } catch (InvalidArgumentException e) {
+            System.out.println("wc exception:" + e.getMessage());
+        } finally {
+            in.close();
         }
     }
 
-    public void printCommands() {
-        System.out.println("Supported commands:");
-        System.out.println(
-                "cd <name>; mkdir<name>; create_file <name>; cat <name>; write (<-overwrite>) <name> <line num> <text>; ls (<--sorted>); wc <(-l)> <name/text>; help; q");
-    }
-
-    public void ls() {
-        System.out.println("Files:");
-        current.listFiles();
-        System.out.println("Folders:");
-        current.listFolders();
-    }
-
-    public void lsSortedDes() {
-        current.printSortedByNameAndSize();
-    }
-
-    public void getWc(String input, Scanner scanner) {
-        Scanner in = new Scanner(input);
-        String name = in.next();
-        if (name.equals("-l")) {
-            in.skip(" ");
-            String n = in.next();
-            if (current.hasFile(n)) {
-                System.out.println(n + " - " + wcl(n) + " lines");
-            } else {
-                String text = n + in.nextLine() + "\n" + getMultipleLineInput(scanner);
-                System.out.println(countLinesInText(text) + " lines");
-            }
-        } else {
-            if (current.hasFile(name)) {
-                System.out.println(name + " - " + countFile(current.getFileByName(name)) + " words");
-            } else {
-                String text = name + in.nextLine() + "\n" + getMultipleLineInput(scanner);
-                System.out.println(countText(text) + " words");
-            }
-        }
-        in.close();
-    }
-
-    public int wcl(String name) {
-        return current.getFileByName(name).getLineCount();
-    }
-
-    public String getMultipleLineInput(Scanner scanner) {
+    private String getMultipleLineInput(Scanner scanner) {
         StringBuilder text = new StringBuilder();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -163,54 +133,51 @@ public class MyTerminal extends WordCounter {
         String command = scanner.next();
         String input = scanner.nextLine();
         switch (command) {
-        case "cd": {
-            cd(input.substring(1));
-            break;
-        }
-        case "mkdir": {
-            mkdir(input.substring(1));
-            break;
-        }
-        case "create_file": {
-            createFile(input.substring(1));
-            break;
-        }
-        case "cat": {
-            cat(input.substring(1));
-            break;
-        }
-        case "write": {
-            getWrite(input.substring(1));
-            break;
-        }
-        case "wc": {
-            getWc(input.substring(1), scanner);
-            break;
-        }
-        case "ls": {
-            if (input.equals(" --sorted")) {
-                lsSortedDes();
-
-            } else if (input.equals(" |")) {
-                current.printAllFilesSizes();
-            } else {
-                ls();
+            case "cd": {
+                cd(input.substring(1));
+                break;
             }
-            break;
+            case "mkdir": {
+                mkdir(input.substring(1));
+                break;
+            }
+            case "create_file": {
+                createFile(input.substring(1));
+                break;
+            }
+            case "cat": {
+                cat(input.substring(1));
+                break;
+            }
+            case "write": {
+                getWrite(input.substring(1));
+                break;
+            }
+            case "wc": {
+                getWc(input.substring(1), scanner);
+                break;
+            }
+            case "ls": {
+                if (input.equals(" --sorted")) {
+                    ls(true);
+                } else {
+                    ls(false);
+                }
+                break;
+            }
+            case "q": {
+                status = false;
+                System.out.println("Goodbye");
+                return;
+            }
+            case "help": {
+                printCommands();
+                break;
+            }
+            default: {
+                System.out.println("Invalid command");
+            }
         }
-        case "q": {
-            status = false;
-            System.out.println("Goodbye");
-            return;
-        }
-        case "help": {
-            printCommands();
-            break;
-        }
-        default: {
-            System.out.println("Invalid command");
-        }
-        }
-        printCurrentPath();
+        printPath();
     }
 }
