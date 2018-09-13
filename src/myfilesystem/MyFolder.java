@@ -11,12 +11,21 @@ public class MyFolder {
     private Map<String, MyFolder> folders;
     private String name;
     private MyFolder parent;
+    private long size;
 
     public MyFolder(String name) {
         files = new HashMap<String, MyFile>();
         folders = new HashMap<String, MyFolder>();
         this.name = name;
         this.parent = null;
+        setSize();
+    }
+
+    private void setSize() {
+        size = folders.size();
+        for (MyFile f : files.values()) {
+            size += f.getSize();
+        }
     }
 
     private String getName() {
@@ -27,6 +36,10 @@ public class MyFolder {
         return this.parent;
     }
 
+    public long getSize() {
+        return size;
+    }
+
     public void makeNewFolderInside(String name) throws InvalidArgumentException {
         if (folders.containsKey(name)) {
             throw new InvalidArgumentException("Folder with name \"" + name + "\" already Exists");
@@ -34,6 +47,7 @@ public class MyFolder {
             MyFolder newFolder = new MyFolder(name);
             newFolder.parent = this;
             folders.put(name, newFolder);
+            setSize();
         }
     }
 
@@ -45,20 +59,31 @@ public class MyFolder {
         }
     }
 
-    public void makeNewFileInside(String name) throws InvalidArgumentException {
+    public void makeNewFileInside(String name, int sizeLimit)
+            throws InvalidArgumentException, NotEnoughSpaceException {
         if (folders.containsKey(name)) {
             throw new InvalidArgumentException("File with name \"" + name + "\" already Exists");
         } else {
             MyFile newFile = new MyFile(name);
-            files.put(name, newFile);
+            if (newFile.getSize() < sizeLimit) {
+                files.put(name, newFile);
+                setSize();
+            } else {
+                throw new NotEnoughSpaceException();
+            }
         }
     }
 
-    public void writeInFile(String name, int line, String text, boolean overwrite)
-            throws InvalidArgumentException {
+    public void writeInFile(String name, int line, String text, boolean overwrite, int sizeLimit)
+            throws InvalidArgumentException, NotEnoughSpaceException {
         if (files.containsKey(name)) {
             MyFile cfile = files.get(name);
-            cfile.setTextAtLine(line, text, overwrite);
+            if (WordCounter.countChars(text) < sizeLimit) {
+                cfile.setTextAtLine(line, text, overwrite);
+                setSize();
+            } else {
+                throw new NotEnoughSpaceException();
+            }
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }

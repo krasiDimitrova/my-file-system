@@ -32,7 +32,7 @@ public class MyTerminal {
     private void mkdir(String name) {
         try {
             fs.mkdir(name);
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("mkdir exception: " + e.getMessage());
         }
     }
@@ -40,7 +40,7 @@ public class MyTerminal {
     private void createFile(String name) {
         try {
             fs.createFile(name);
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("create_file exception: " + e.getMessage());
         }
     }
@@ -70,7 +70,7 @@ public class MyTerminal {
                 String text = in.nextLine();
                 fs.writeInFile(name, num, text, false);
             }
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("write exception: " + e.getMessage());
         } finally {
             in.close();

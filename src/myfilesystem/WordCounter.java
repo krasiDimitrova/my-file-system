@@ -13,4 +13,8 @@ public class WordCounter {
         StringTokenizer st = new StringTokenizer(text, "\r\n");
         return st.countTokens();
     }
+
+    public static int countChars(String text) {
+        return text.length();
+    }
 }

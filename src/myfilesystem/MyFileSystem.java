@@ -4,18 +4,35 @@ public class MyFileSystem {
 
     private MyFolder start;
     private MyFolder current;
+    private long space;
+    private long usedSpace;
 
     public MyFileSystem() {
         start = new MyFolder("/");
+        space = Long.MAX_VALUE;
         try {
             start.makeNewFolderInside("Home");
             current = start.getFolderByName("Home");
         } catch (InvalidArgumentException e) {
+        } finally {
+            setUsedSpace();
         }
+    }
+
+    private void setUsedSpace() {
+        usedSpace = start.getSize();
     }
 
     public String getCurrentPath() {
         return current.getFolderPath() + ">";
+    }
+
+    public boolean isFull() {
+        return space == usedSpace;
+    }
+
+    public boolean hasEnoughSpace(long size) {
+        return (space - usedSpace > size);
     }
 
     public void switchDirectory(String name) throws InvalidArgumentException {
@@ -33,15 +50,19 @@ public class MyFileSystem {
         }
     }
 
-    public void mkdir(String name) throws InvalidArgumentException {
-        current.makeNewFolderInside(name);
+    public void mkdir(String name) throws InvalidArgumentException, NotEnoughSpaceException {
+        if (hasEnoughSpace(1)) {
+            current.makeNewFolderInside(name);
+        } else {
+            throw new NotEnoughSpaceException();
+        }
     }
 
-    public void createFile(String name) throws InvalidArgumentException {
+    public void createFile(String name) throws InvalidArgumentException, NotEnoughSpaceException {
         if (name.equals("")) {
             throw new InvalidArgumentException("File with empty names not allowed!");
         } else {
-            current.makeNewFileInside(name);
+            current.makeNewFileInside(name, (space - usedSpace));
         }
     }
 
@@ -50,8 +71,8 @@ public class MyFileSystem {
     }
 
     public void writeInFile(String name, int line, String text, boolean overwrite)
-            throws InvalidArgumentException {
-        current.writeInFile(name, line, text, overwrite);
+            throws InvalidArgumentException, NotEnoughSpaceException {
+        current.writeInFile(name, line, text, overwrite, (space - usedSpace));
     }
 
     public void printCommands() {
