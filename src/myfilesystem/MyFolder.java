@@ -59,30 +59,33 @@ public class MyFolder {
         }
     }
 
-    public void makeNewFileInside(String name, int sizeLimit)
+    public void makeNewFileInside(String name, long sizeLimit)
             throws InvalidArgumentException, NotEnoughSpaceException {
-        if (folders.containsKey(name)) {
-            throw new InvalidArgumentException("File with name \"" + name + "\" already Exists");
-        } else {
-            MyFile newFile = new MyFile(name);
-            if (newFile.getSize() < sizeLimit) {
+        MyFile newFile = new MyFile(name);
+        if (newFile.getSize() < sizeLimit) {
+            if (files.containsKey(name) && !files.get(name).isDeleted()) {
+                throw new InvalidArgumentException(
+                        "File with name \"" + name + "\" already Exists");
+            } else {
                 files.put(name, newFile);
                 setSize();
-            } else {
-                throw new NotEnoughSpaceException();
             }
+        } else {
+            throw new NotEnoughSpaceException();
         }
     }
 
-    public void writeInFile(String name, int line, String text, boolean overwrite, int sizeLimit)
+    public void writeInFile(String name, int line, String text, boolean overwrite, long sizeLimit)
             throws InvalidArgumentException, NotEnoughSpaceException {
         if (files.containsKey(name)) {
             MyFile cfile = files.get(name);
-            if (WordCounter.countChars(text) < sizeLimit) {
-                cfile.setTextAtLine(line, text, overwrite);
-                setSize();
-            } else {
-                throw new NotEnoughSpaceException();
+            if (!cfile.isDeleted()) {
+                if (WordCounter.countChars(text) < sizeLimit) {
+                    cfile.setTextAtLine(line, text, overwrite);
+                    setSize();
+                } else {
+                    throw new NotEnoughSpaceException();
+                }
             }
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
@@ -91,7 +94,11 @@ public class MyFolder {
 
     public void printFileLineCount(String name) throws InvalidArgumentException {
         if (files.containsKey(name)) {
-            files.get(name).printLineCount();
+            MyFile cfile = files.get(name);
+            if (!cfile.isDeleted()) {
+                cfile.printContent();
+                cfile.printLineCount();
+            }
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
@@ -99,7 +106,11 @@ public class MyFolder {
 
     public void printFileWordsCount(String name) throws InvalidArgumentException {
         if (files.containsKey(name)) {
-            files.get(name).printWordsCount();
+            MyFile cfile = files.get(name);
+            if (!cfile.isDeleted()) {
+                cfile.printContent();
+                cfile.printWordsCount();
+            }
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
@@ -108,7 +119,9 @@ public class MyFolder {
     public void displayFile(String name) throws InvalidArgumentException {
         if (files.containsKey(name)) {
             MyFile cfile = files.get(name);
-            cfile.printContent();
+            if (!cfile.isDeleted()) {
+                cfile.printContent();
+            }
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
@@ -131,7 +144,9 @@ public class MyFolder {
     public void listFiles() {
         if (files.size() > 0) {
             for (Map.Entry<String, MyFile> pair : files.entrySet()) {
-                System.out.println(pair.getValue().getName());
+                if (!pair.getValue().isDeleted()) {
+                    System.out.println(pair.getValue().getName());
+                }
             }
         }
     }
@@ -157,7 +172,25 @@ public class MyFolder {
         }
         System.out.println("Files:");
         for (MyFile file : sortedFilesBySize) {
-            System.out.println(file.getName());
+            if (!file.isDeleted()) {
+                System.out.println(file.getName());
+            }
+        }
+    }
+
+    public void deleteFile(String name) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            files.get(name).delete();
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
+        }
+    }
+
+    public void deleteFileLines(String name, int start, int end) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            files.get(name).deleteLines(start, end);
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
     }
 

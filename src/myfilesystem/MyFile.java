@@ -8,11 +8,13 @@ public class MyFile {
     private List<MyLine> content;
     private String name;
     private int size;
+    private boolean deleted;
 
     public MyFile(String name) {
         content = new ArrayList<MyLine>();
         this.name = name;
         this.size = content.size();
+        deleted = false;
     }
 
     public int getSize() {
@@ -33,6 +35,30 @@ public class MyFile {
 
     private void setSize() {
         this.size = calculateSize();
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void delete() {
+        deleted = true;
+    }
+
+    public void deleteLines(int start, int end) throws InvalidArgumentException {
+        if (isLine(start) && isLine(end)) {
+            if (isLine(end)) {
+                for (int i = start - 1; i < end - 1; i++) {
+                    content.get(i).setText("");
+                }
+            } else {
+                for (int i = start - 1; i < end - 1; i++) {
+                    content.remove(i);
+                }
+            }
+        } else {
+            throw new InvalidArgumentException("Invalid line index to be deleted");
+        }
     }
 
     private void addLine(String text) {

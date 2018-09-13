@@ -53,6 +53,27 @@ public class MyTerminal {
         }
     }
 
+    private void rm(String name) {
+        try {
+            fs.removeFile(name);
+        } catch (InvalidArgumentException e) {
+            System.out.println("rm exception: " + e.getMessage());
+        }
+    }
+
+    private void remove(String name, String input) {
+        Scanner in = new Scanner(input);
+        int start = in.nextInt();
+        int end = in.nextInt();
+        try {
+            fs.removeLinesFromFile(name, start, end);
+        } catch (InvalidArgumentException e) {
+            System.out.println("write exception: " + e.getMessage());
+        } finally {
+            in.close();
+        }
+    }
+
     private void getWrite(String input) {
         Scanner in = new Scanner(input);
         String name = in.next();
@@ -151,6 +172,14 @@ public class MyTerminal {
             }
             case "write": {
                 getWrite(input.substring(1));
+                break;
+            }
+            case "rm": {
+                rm(input.substring(1));
+                break;
+            }
+            case "remove": {
+                remove(input.substring(1));
                 break;
             }
             case "wc": {

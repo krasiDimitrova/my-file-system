@@ -77,8 +77,9 @@ public class MyFileSystem {
 
     public void printCommands() {
         System.out.println("Supported commands:");
-        System.out.println("cd <name>; mkdir<name>; create_file <name>; cat <name>; "
-                + "write (<-overwrite>) <name> <line num> <text>; ls (<--sorted>); "
+        System.out.println("cd <name>; mkdir <name>; create_file <name>; cat <name>; "
+                + "write (<-overwrite>) <name> <line num> <text>; ls (<--sorted>); " + "rm <name>"
+                + "remove < file_name > < line_number1 >-< line_number2 >"
                 + "wc <(-l)> <name/text>; help; q");
     }
 
@@ -107,5 +108,14 @@ public class MyFileSystem {
         } else {
             System.out.println(WordCounter.countText(text) + " words");
         }
+    }
+
+    public void removeFile(String name) throws InvalidArgumentException {
+        current.deleteFile(name);
+    }
+
+    public void removeLinesFromFile(String name, int start, int end)
+            throws InvalidArgumentException {
+        current.deleteFileLines(name, start, end);
     }
 }
