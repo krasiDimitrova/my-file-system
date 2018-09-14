@@ -1,30 +1,29 @@
 package myfilesystem;
 
+import java.util.Stack;
+
 public class MyFileSystem {
 
     private MyFolder start;
-    private MyFolder current;
     private long space;
     private long usedSpace;
+    private Stack<String> deleted;
 
     public MyFileSystem() {
         start = new MyFolder("/");
         space = Long.MAX_VALUE;
         try {
             start.makeNewFolderInside("Home");
-            current = start.getFolderByName("Home");
         } catch (InvalidArgumentException e) {
         } finally {
             setUsedSpace();
         }
+        deleted = new Stack<String>();
     }
 
     private void setUsedSpace() {
+        start.setSize();
         usedSpace = start.getSize();
-    }
-
-    public String getCurrentPath() {
-        return current.getFolderPath() + ">";
     }
 
     public boolean isFull() {
@@ -35,30 +34,68 @@ public class MyFileSystem {
         return (space - usedSpace > size);
     }
 
-    public void switchDirectory(String name) throws InvalidArgumentException {
-        switch (name) {
-            case ".": {
-                break;
+    public MyFolder moveToCurrent(String currentPath) {
+        MyFolder current = start;
+        String[] path = currentPath.split(" ");
+        for (int i = 1; i < path.length; i++) {
+            try {
+                current = current.getFolderByName(path[i]);
+            } catch (InvalidArgumentException e) {
+                System.out.println("FatalError");
             }
-            case "..": {
-                current = current.getParent();
-                break;
-            }
-            default: {
-                current = current.getFolderByName(name);
-            }
+        }
+        return current;
+    }
+
+    public String switchDirectory(String name, String currentPath) throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(currentPath);
+        if (current.hasFolderWithName(name)) {
+            return name;
+        } else {
+            throw new InvalidArgumentException("Folder with name \"" + name + "\" dosen't exist");
         }
     }
 
-    public void mkdir(String name) throws InvalidArgumentException, NotEnoughSpaceException {
+    public void mkdir(String name, String currentPath)
+            throws InvalidArgumentException, NotEnoughSpaceException {
+        MyFolder current = moveToCurrent(currentPath);
         if (hasEnoughSpace(1)) {
             current.makeNewFolderInside(name);
         } else {
             throw new NotEnoughSpaceException();
         }
+        setUsedSpace();
     }
 
-    public void createFile(String name) throws InvalidArgumentException, NotEnoughSpaceException {
+    public void createFile(String name, String currentPath)
+            throws InvalidArgumentException, NotEnoughSpaceException {
+        MyFolder current = moveToCurrent(currentPath);
+        if (deleted.isEmpty()) {
+            createFileFromEmptySpace(name, current);
+        } else {
+            StringBuilder path = new StringBuilder(deleted.pop());
+            int start = path.lastIndexOf(" ");
+            int end = path.length();
+            String fileName = path.substring(start + 1, end);
+            path.delete(start, end);
+            MyFile overwrite = getFileToOverwrite(fileName, path.toString());
+            createFileWithOverwrite(name, overwrite, current);
+        }
+        setUsedSpace();
+    }
+
+    private MyFile getFileToOverwrite(String name, String path) throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(path);
+        MyFile toOverwrite = current.getDeletedFile(name);
+        return toOverwrite;
+    }
+
+    private void createFileWithOverwrite(String name, MyFile toAdd, MyFolder current) {
+        current.addOverwrittenFile(name, toAdd);
+    }
+
+    private void createFileFromEmptySpace(String name, MyFolder current)
+            throws InvalidArgumentException, NotEnoughSpaceException {
         if (name.equals("")) {
             throw new InvalidArgumentException("File with empty names not allowed!");
         } else {
@@ -66,13 +103,17 @@ public class MyFileSystem {
         }
     }
 
-    public void displayFileContent(String name) throws InvalidArgumentException {
+    public void displayFileContent(String name, String currentPath)
+            throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(currentPath);
         current.displayFile(name);
     }
 
-    public void writeInFile(String name, int line, String text, boolean overwrite)
-            throws InvalidArgumentException, NotEnoughSpaceException {
+    public void writeInFile(String name, int line, String text, boolean overwrite,
+            String currentPath) throws InvalidArgumentException, NotEnoughSpaceException {
+        MyFolder current = moveToCurrent(currentPath);
         current.writeInFile(name, line, text, overwrite, (space - usedSpace));
+        setUsedSpace();
     }
 
     public void printCommands() {
@@ -83,18 +124,22 @@ public class MyFileSystem {
                 + "wc <(-l)> <name/text>; help; q");
     }
 
-    public void ls() {
+    public void ls(String currentPath) {
+        MyFolder current = moveToCurrent(currentPath);
         System.out.println("Files:");
         current.listFiles();
         System.out.println("Folders:");
         current.listFolders();
     }
 
-    public void lsSortedDes() {
+    public void lsSortedDes(String currentPath) {
+        MyFolder current = moveToCurrent(currentPath);
         current.printSortedByNameAndSize();
     }
 
-    public void getWc(String name, boolean lineCount) throws InvalidArgumentException {
+    public void getWc(String name, boolean lineCount, String currentPath)
+            throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(currentPath);
         if (lineCount) {
             current.printFileLineCount(name);
         } else {
@@ -110,12 +155,17 @@ public class MyFileSystem {
         }
     }
 
-    public void removeFile(String name) throws InvalidArgumentException {
+    public void removeFile(String name, String currentPath) throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(currentPath);
         current.deleteFile(name);
+        deleted.push(currentPath + " " + name);
+        setUsedSpace();
     }
 
-    public void removeLinesFromFile(String name, int start, int end)
+    public void removeLinesFromFile(String name, int start, int end, String currentPath)
             throws InvalidArgumentException {
+        MyFolder current = moveToCurrent(currentPath);
         current.deleteFileLines(name, start, end);
+        setUsedSpace();
     }
 }

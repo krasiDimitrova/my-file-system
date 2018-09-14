@@ -21,7 +21,7 @@ public class MyFolder {
         setSize();
     }
 
-    private void setSize() {
+    public void setSize() {
         size = folders.size();
         for (MyFile f : files.values()) {
             size += f.getSize();
@@ -32,8 +32,8 @@ public class MyFolder {
         return name;
     }
 
-    public MyFolder getParent() {
-        return this.parent;
+    public String getParentName() {
+        return parent.getName();
     }
 
     public long getSize() {
@@ -51,12 +51,23 @@ public class MyFolder {
         }
     }
 
+    public boolean hasFolderWithName(String name) {
+        return folders.containsKey(name);
+    }
+
     public MyFolder getFolderByName(String name) throws InvalidArgumentException {
         if (folders.containsKey(name)) {
             return folders.get(name);
         } else {
             throw new InvalidArgumentException("Folder with name \"" + name + "\" dosen't exist");
         }
+    }
+
+    public void addOverwrittenFile(String name, MyFile toAdd) {
+        toAdd.setNotDeleted();
+        toAdd.deleteContent();
+        files.put(name, toAdd);
+        setSize();
     }
 
     public void makeNewFileInside(String name, long sizeLimit)
@@ -96,7 +107,6 @@ public class MyFolder {
         if (files.containsKey(name)) {
             MyFile cfile = files.get(name);
             if (!cfile.isDeleted()) {
-                cfile.printContent();
                 cfile.printLineCount();
             }
         } else {
@@ -108,7 +118,6 @@ public class MyFolder {
         if (files.containsKey(name)) {
             MyFile cfile = files.get(name);
             if (!cfile.isDeleted()) {
-                cfile.printContent();
                 cfile.printWordsCount();
             }
         } else {
@@ -125,20 +134,6 @@ public class MyFolder {
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
-    }
-
-    public String getFolderPath() {
-        MyFolder currentF = this;
-        StringBuilder path = new StringBuilder();
-        if (currentF.name == "/") {
-            path.insert(0, '/');
-        } else {
-            while (currentF.parent != null) {
-                path.insert(0, '/' + currentF.name);
-                currentF = currentF.parent;
-            }
-        }
-        return path.toString();
     }
 
     public void listFiles() {
@@ -189,9 +184,24 @@ public class MyFolder {
     public void deleteFileLines(String name, int start, int end) throws InvalidArgumentException {
         if (files.containsKey(name)) {
             files.get(name).deleteLines(start, end);
+            setSize();
         } else {
             throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
         }
+    }
+
+    public MyFile getDeletedFile(String name) throws InvalidArgumentException {
+        if (files.containsKey(name)) {
+            MyFile toDelete = files.get(name);
+            if (toDelete.isDeleted()) {
+                files.remove(name);
+                setSize();
+                return toDelete;
+            }
+        } else {
+            throw new InvalidArgumentException("File with name \"" + name + "\" doesn't exist");
+        }
+        return null;
     }
 
 }

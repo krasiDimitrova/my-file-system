@@ -45,20 +45,24 @@ public class MyFile {
         deleted = true;
     }
 
+    public void setNotDeleted() {
+        deleted = false;
+    }
+
     public void deleteLines(int start, int end) throws InvalidArgumentException {
-        if (isLine(start) && isLine(end)) {
-            if (isLine(end)) {
-                for (int i = start - 1; i < end - 1; i++) {
-                    content.get(i).setText("");
-                }
-            } else {
-                for (int i = start - 1; i < end - 1; i++) {
-                    content.remove(i);
-                }
+        if (isLine(start - 1) && isLine(end - 1)) {
+            for (int i = start - 1; i < end; i++) {
+                content.remove(i);
             }
+            setSize();
         } else {
             throw new InvalidArgumentException("Invalid line index to be deleted");
         }
+    }
+
+    public void deleteContent() {
+        content.clear();
+        setSize();
     }
 
     private void addLine(String text) {

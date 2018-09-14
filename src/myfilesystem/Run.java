@@ -13,5 +13,4 @@ public class Run {
         }
         scan.close();
     }
-
 }

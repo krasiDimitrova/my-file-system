@@ -5,11 +5,13 @@ import java.util.Scanner;
 public class MyTerminal {
 
     private boolean status;
-    MyFileSystem fs;
+    private MyFileSystem fs;
+    private StringBuilder currentPath;
 
     public MyTerminal(MyFileSystem fs) {
         status = true;
         this.fs = fs;
+        currentPath = new StringBuilder("/ Home");
         printPath();
     }
 
@@ -18,20 +20,48 @@ public class MyTerminal {
     }
 
     private void printPath() {
-        System.out.println(fs.getCurrentPath());
+        String path = new String(currentPath).replace(" ", "/");
+        System.out.println(path + ">");
+    }
+
+    private void addToPath(String name) {
+        currentPath.append(" " + name);
+    }
+
+    private void removeFromPath() {
+        int start = currentPath.lastIndexOf(" ");
+        int end = currentPath.length();
+        currentPath.delete(start, end);
     }
 
     private void cd(String name) {
-        try {
-            fs.switchDirectory(name);
-        } catch (InvalidArgumentException e) {
-            System.out.println("cd exception: " + e.getMessage());
+        switch (name) {
+            case ".": {
+                break;
+            }
+            case "..": {
+                if (currentPath.toString().equals("/")) {
+                    System.out.println("Cannot move backwards");
+                } else {
+                    removeFromPath();
+                }
+                break;
+            }
+            default: {
+                try {
+                    String newDir = fs.switchDirectory(name, currentPath.toString());
+                    addToPath(newDir);
+                    break;
+                } catch (InvalidArgumentException e) {
+                    System.out.println("cd exception: " + e.getMessage());
+                }
+            }
         }
     }
 
     private void mkdir(String name) {
         try {
-            fs.mkdir(name);
+            fs.mkdir(name, currentPath.toString());
         } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("mkdir exception: " + e.getMessage());
         }
@@ -39,7 +69,7 @@ public class MyTerminal {
 
     private void createFile(String name) {
         try {
-            fs.createFile(name);
+            fs.createFile(name, currentPath.toString());
         } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("create_file exception: " + e.getMessage());
         }
@@ -47,7 +77,7 @@ public class MyTerminal {
 
     private void cat(String name) {
         try {
-            fs.displayFileContent(name);
+            fs.displayFileContent(name, currentPath.toString());
         } catch (InvalidArgumentException e) {
             System.out.println("cat exception: " + e.getMessage());
         }
@@ -55,18 +85,19 @@ public class MyTerminal {
 
     private void rm(String name) {
         try {
-            fs.removeFile(name);
+            fs.removeFile(name, currentPath.toString());
         } catch (InvalidArgumentException e) {
             System.out.println("rm exception: " + e.getMessage());
         }
     }
 
-    private void remove(String name, String input) {
+    private void remove(String input) {
         Scanner in = new Scanner(input);
+        String name = in.next();
         int start = in.nextInt();
         int end = in.nextInt();
         try {
-            fs.removeLinesFromFile(name, start, end);
+            fs.removeLinesFromFile(name, start, end, currentPath.toString());
         } catch (InvalidArgumentException e) {
             System.out.println("write exception: " + e.getMessage());
         } finally {
@@ -76,23 +107,25 @@ public class MyTerminal {
 
     private void getWrite(String input) {
         Scanner in = new Scanner(input);
-        String name = in.next();
         try {
+            String name = in.next();
             if (name.equals("-overwrite")) {
                 in.skip(" ");
                 String n = in.next();
                 int num = in.nextInt();
                 in.skip(" ");
                 String text = in.nextLine();
-                fs.writeInFile(n, num, text, true);
+                fs.writeInFile(n, num, text, true, currentPath.toString());
             } else {
                 int num = in.nextInt();
                 in.skip(" ");
                 String text = in.nextLine();
-                fs.writeInFile(name, num, text, false);
+                fs.writeInFile(name, num, text, false, currentPath.toString());
             }
         } catch (InvalidArgumentException | NotEnoughSpaceException e) {
             System.out.println("write exception: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Invalid input");
         } finally {
             in.close();
         }
@@ -104,9 +137,9 @@ public class MyTerminal {
 
     private void ls(Boolean sorted) {
         if (sorted) {
-            fs.lsSortedDes();
+            fs.lsSortedDes(currentPath.toString());
         } else {
-            fs.ls();
+            fs.ls(currentPath.toString());
         }
     }
 
@@ -118,14 +151,14 @@ public class MyTerminal {
                 in.skip(" ");
                 String n = in.next();
                 if (!in.hasNext()) {
-                    fs.getWc(n, true);
+                    fs.getWc(n, true, currentPath.toString());
                 } else {
                     String text = n + in.nextLine() + "\n" + getMultipleLineInput(scanner);
                     fs.printWcforText(text, true);
                 }
             } else {
                 if (!in.hasNext()) {
-                    fs.getWc(name, false);
+                    fs.getWc(name, false, currentPath.toString());
                 } else {
                     String text = name + in.nextLine() + "\n" + getMultipleLineInput(scanner);
                     fs.printWcforText(text, false);
