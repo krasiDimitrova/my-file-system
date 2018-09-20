@@ -2,7 +2,7 @@ package myfilesystem;
 
 import java.util.Stack;
 
-public class MyFileSystem {
+public class MyFileSystem implements FileSystem {
 
     private MyFolder start;
     private long space;
@@ -47,6 +47,7 @@ public class MyFileSystem {
         return current;
     }
 
+    @Override
     public String switchDirectory(String name, String currentPath) throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);
         if (current.hasFolderWithName(name)) {
@@ -56,6 +57,7 @@ public class MyFileSystem {
         }
     }
 
+    @Override
     public void mkdir(String name, String currentPath)
             throws InvalidArgumentException, NotEnoughSpaceException {
         MyFolder current = moveToCurrent(currentPath);
@@ -67,6 +69,7 @@ public class MyFileSystem {
         setUsedSpace();
     }
 
+    @Override
     public void createFile(String name, String currentPath)
             throws InvalidArgumentException, NotEnoughSpaceException {
         MyFolder current = moveToCurrent(currentPath);
@@ -103,12 +106,14 @@ public class MyFileSystem {
         }
     }
 
+    @Override
     public void displayFileContent(String name, String currentPath)
             throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);
         current.displayFile(name);
     }
 
+    @Override
     public void writeInFile(String name, int line, String text, boolean overwrite,
             String currentPath) throws InvalidArgumentException, NotEnoughSpaceException {
         MyFolder current = moveToCurrent(currentPath);
@@ -116,6 +121,7 @@ public class MyFileSystem {
         setUsedSpace();
     }
 
+    @Override
     public void printCommands() {
         System.out.println("Supported commands:");
         System.out.println("cd <name>; mkdir <name>; create_file <name>; cat <name>; "
@@ -124,6 +130,7 @@ public class MyFileSystem {
                 + "wc <(-l)> <name/text>; help; q");
     }
 
+    @Override
     public void ls(String currentPath) {
         MyFolder current = moveToCurrent(currentPath);
         System.out.println("Files:");
@@ -132,11 +139,13 @@ public class MyFileSystem {
         current.listFolders();
     }
 
+    @Override
     public void lsSortedDes(String currentPath) {
         MyFolder current = moveToCurrent(currentPath);
         current.printSortedByNameAndSize();
     }
 
+    @Override
     public void getWc(String name, boolean lineCount, String currentPath)
             throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);
@@ -147,6 +156,7 @@ public class MyFileSystem {
         }
     }
 
+    @Override
     public void printWcforText(String text, boolean lineCount) {
         if (lineCount) {
             System.out.println(WordCounter.countLinesInText(text) + " lines");
@@ -155,6 +165,7 @@ public class MyFileSystem {
         }
     }
 
+    @Override
     public void removeFile(String name, String currentPath) throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);
         current.deleteFile(name);
@@ -162,6 +173,7 @@ public class MyFileSystem {
         setUsedSpace();
     }
 
+    @Override
     public void removeLinesFromFile(String name, int start, int end, String currentPath)
             throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);

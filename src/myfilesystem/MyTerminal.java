@@ -1,14 +1,15 @@
 package myfilesystem;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class MyTerminal {
 
     private boolean status;
-    private MyFileSystem fs;
+    private FileSystem fs;
     private StringBuilder currentPath;
 
-    public MyTerminal(MyFileSystem fs) {
+    public MyTerminal(FileSystem fs) {
         status = true;
         this.fs = fs;
         currentPath = new StringBuilder("/ Home");
@@ -70,7 +71,7 @@ public class MyTerminal {
     private void createFile(String name) {
         try {
             fs.createFile(name, currentPath.toString());
-        } catch (InvalidArgumentException | NotEnoughSpaceException e) {
+        } catch (InvalidArgumentException | NotEnoughSpaceException | IOException e) {
             System.out.println("create_file exception: " + e.getMessage());
         }
     }
@@ -78,7 +79,7 @@ public class MyTerminal {
     private void cat(String name) {
         try {
             fs.displayFileContent(name, currentPath.toString());
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | IOException e) {
             System.out.println("cat exception: " + e.getMessage());
         }
     }
@@ -86,7 +87,7 @@ public class MyTerminal {
     private void rm(String name) {
         try {
             fs.removeFile(name, currentPath.toString());
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | IOException e) {
             System.out.println("rm exception: " + e.getMessage());
         }
     }
@@ -139,7 +140,11 @@ public class MyTerminal {
         if (sorted) {
             fs.lsSortedDes(currentPath.toString());
         } else {
-            fs.ls(currentPath.toString());
+            try {
+                fs.ls(currentPath.toString());
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
@@ -164,7 +169,7 @@ public class MyTerminal {
                     fs.printWcforText(text, false);
                 }
             }
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | IOException e) {
             System.out.println("wc exception:" + e.getMessage());
         } finally {
             in.close();
