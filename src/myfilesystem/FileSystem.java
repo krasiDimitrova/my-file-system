@@ -32,6 +32,6 @@ public interface FileSystem {
     void removeFile(String name, String currentPath) throws InvalidArgumentException, IOException;
 
     void removeLinesFromFile(String name, int start, int end, String currentPath)
-            throws InvalidArgumentException;
+            throws InvalidArgumentException, IOException;
 
 }

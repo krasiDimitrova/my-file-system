@@ -79,8 +79,8 @@ public class MyRealFileSystem implements FileSystem {
     public void writeInFile(String name, int line, String text, boolean overwrite,
             String currentPath) throws IOException {
         Path nDPath = moveToCurrent(currentPath + " " + name);
-        BufferedWriter out = new BufferedWriter(new FileWriter(nDPath.toString()));
-        out.write(text);
+        BufferedWriter out = new BufferedWriter(new FileWriter(nDPath.toString(), true));
+        out.write(text + System.getProperty("line.separator"));
         out.close();
     }
 
@@ -166,7 +166,23 @@ public class MyRealFileSystem implements FileSystem {
 
     @Override
     public void removeLinesFromFile(String name, int start, int end, String currentPath)
-            throws InvalidArgumentException {
-
+            throws InvalidArgumentException, IOException {
+        File readFile = new File(moveToCurrent(currentPath + " " + name).toString());
+        File tempFile = new File(moveToCurrent(currentPath + " temp.txt").toString());
+        try (BufferedReader in = new BufferedReader(new FileReader(readFile));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            String currentLine;
+            int lineCount = 1;
+            while ((currentLine = in.readLine()) != null) {
+                if (lineCount < start || lineCount > end) {
+                    writer.write(currentLine + System.getProperty("line.separator"));
+                }
+                lineCount++;
+            }
+        } catch (FileNotFoundException e) {
+            throw new InvalidArgumentException("File with name \"" + name + "\" dosen't Exists");
+        }
+        readFile.delete();
+        tempFile.renameTo(readFile);
     }
 }

@@ -99,7 +99,7 @@ public class MyTerminal {
         int end = in.nextInt();
         try {
             fs.removeLinesFromFile(name, start, end, currentPath.toString());
-        } catch (InvalidArgumentException e) {
+        } catch (InvalidArgumentException | IOException e) {
             System.out.println("write exception: " + e.getMessage());
         } finally {
             in.close();
