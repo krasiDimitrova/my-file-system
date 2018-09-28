@@ -12,11 +12,11 @@ public interface FileSystem {
     void createFile(String name, String currentPath)
             throws InvalidArgumentException, NotEnoughSpaceException, IOException;
 
-    void displayFileContent(String name, String currentPath)
+    void displayFileContent(String name, String currentPath, String encoding)
             throws InvalidArgumentException, IOException;
 
-    void writeInFile(String name, int line, String text, boolean overwrite, String currentPath)
-            throws IOException, InvalidArgumentException, NotEnoughSpaceException;
+    void writeInFile(String name, int line, String text, boolean overwrite, String currentPath,
+            String encoding) throws IOException, InvalidArgumentException, NotEnoughSpaceException;
 
     void printCommands();
 

@@ -107,7 +107,7 @@ public class MyFileSystem implements FileSystem {
     }
 
     @Override
-    public void displayFileContent(String name, String currentPath)
+    public void displayFileContent(String name, String currentPath, String encoding)
             throws InvalidArgumentException {
         MyFolder current = moveToCurrent(currentPath);
         current.displayFile(name);
@@ -115,7 +115,8 @@ public class MyFileSystem implements FileSystem {
 
     @Override
     public void writeInFile(String name, int line, String text, boolean overwrite,
-            String currentPath) throws InvalidArgumentException, NotEnoughSpaceException {
+            String currentPath, String encoding)
+            throws InvalidArgumentException, NotEnoughSpaceException {
         MyFolder current = moveToCurrent(currentPath);
         current.writeInFile(name, line, text, overwrite, (space - usedSpace));
         setUsedSpace();

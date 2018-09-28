@@ -3,10 +3,12 @@ package myfilesystem;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,22 +64,38 @@ public class MyRealFileSystem implements FileSystem {
     }
 
     @Override
-    public void displayFileContent(String name, String currentPath)
+    public void displayFileContent(String name, String currentPath, String encoding)
             throws InvalidArgumentException, IOException {
         Path nDPath = moveToCurrent(currentPath + " " + name);
-        try (BufferedReader in = new BufferedReader(new FileReader(nDPath.toString()))) {
+        BufferedReader in = null;
+        try {
+            if (encoding == null) {
+                in = new BufferedReader(new FileReader(nDPath.toString()));
+            } else {
+                in = new BufferedReader(
+                        new InputStreamReader(new FileInputStream(nDPath.toString()), encoding));
+            }
             String line = null;
             while ((line = in.readLine()) != null) {
                 System.out.println(line);
             }
         } catch (FileNotFoundException e) {
             throw new InvalidArgumentException("File with name \"" + name + "\" dosen't exist");
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
         }
+
     }
 
     @Override
     public void writeInFile(String name, int line, String text, boolean overwrite,
-            String currentPath) throws IOException, InvalidArgumentException {
+            String currentPath, String encoding) throws IOException, InvalidArgumentException {
         if (countLines(name, currentPath) < line) {
             Path nDPath = moveToCurrent(currentPath + " " + name);
             try (BufferedWriter out = new BufferedWriter(new FileWriter(nDPath.toString(), true))) {
