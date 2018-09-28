@@ -77,11 +77,46 @@ public class MyRealFileSystem implements FileSystem {
 
     @Override
     public void writeInFile(String name, int line, String text, boolean overwrite,
-            String currentPath) throws IOException {
-        Path nDPath = moveToCurrent(currentPath + " " + name);
-        BufferedWriter out = new BufferedWriter(new FileWriter(nDPath.toString(), true));
-        out.write(text + System.getProperty("line.separator"));
-        out.close();
+            String currentPath) throws IOException, InvalidArgumentException {
+        if (countLines(name, currentPath) < line) {
+            Path nDPath = moveToCurrent(currentPath + " " + name);
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(nDPath.toString(), true))) {
+                out.write(text + System.getProperty("line.separator"));
+            } catch (FileNotFoundException e) {
+                throw new InvalidArgumentException(
+                        "File with name \"" + name + "\" dosen't Exists");
+            }
+        } else {
+            writeOnLine(name, line, text, overwrite, currentPath);
+        }
+    }
+
+    private void writeOnLine(String name, int line, String text, boolean overwrite,
+            String currentPath) throws IOException, InvalidArgumentException {
+        File readFile = new File(moveToCurrent(currentPath + " " + name).toString());
+        File tempFile = new File(moveToCurrent(currentPath + " temp.txt").toString());
+        try (BufferedReader in = new BufferedReader(new FileReader(readFile));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            String currentLine;
+            int lineCount = 1;
+            while ((currentLine = in.readLine()) != null) {
+                if (lineCount == line) {
+                    if (overwrite) {
+                        writer.write(text + System.getProperty("line.separator"));
+                    } else {
+                        writer.write(
+                                currentLine + " " + text + System.getProperty("line.separator"));
+                    }
+                } else {
+                    writer.write(currentLine + System.getProperty("line.separator"));
+                }
+                lineCount++;
+            }
+        } catch (FileNotFoundException e) {
+            throw new InvalidArgumentException("File with name \"" + name + "\" dosen't Exists");
+        }
+        readFile.delete();
+        tempFile.renameTo(readFile);
     }
 
     @Override
@@ -118,30 +153,41 @@ public class MyRealFileSystem implements FileSystem {
     @Override
     public void getWc(String name, boolean lineCount, String currentPath)
             throws InvalidArgumentException, IOException {
-        Path nDPath = moveToCurrent(currentPath + " " + name);
         if (lineCount) {
-            long lineC = 0;
-            try (BufferedReader in = new BufferedReader(new FileReader(nDPath.toString()))) {
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    lineC++;
-                }
-            } catch (FileNotFoundException e) {
-                throw new InvalidArgumentException("File with name \"" + name + "\" dosen't exist");
-            }
-            System.out.println(lineC + " lines");
+            System.out.println(countLines(name, currentPath) + " lines");
         } else {
-            long wordC = 0;
-            try (BufferedReader in = new BufferedReader(new FileReader(nDPath.toString()))) {
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    wordC += WordCounter.countText(line);
-                }
-            } catch (FileNotFoundException e) {
-                throw new InvalidArgumentException("File with name \"" + name + "\" dosen't exist");
-            }
-            System.out.println(wordC + " words");
+            System.out.println(countWords(name, currentPath) + " words");
         }
+    }
+
+    private long countLines(String name, String currentPath)
+            throws InvalidArgumentException, IOException {
+        Path nDPath = moveToCurrent(currentPath + " " + name);
+        long lineC = 0;
+        try (BufferedReader in = new BufferedReader(new FileReader(nDPath.toString()))) {
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                lineC++;
+            }
+        } catch (FileNotFoundException e) {
+            throw new InvalidArgumentException("File with name \"" + name + "\" dosen't exist");
+        }
+        return lineC;
+    }
+
+    private long countWords(String name, String currentPath)
+            throws InvalidArgumentException, IOException {
+        long wordC = 0;
+        Path nDPath = moveToCurrent(currentPath + " " + name);
+        try (BufferedReader in = new BufferedReader(new FileReader(nDPath.toString()))) {
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                wordC += WordCounter.countText(line);
+            }
+        } catch (FileNotFoundException e) {
+            throw new InvalidArgumentException("File with name \"" + name + "\" dosen't exist");
+        }
+        return wordC;
     }
 
     @Override
